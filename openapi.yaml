@@ -1,0 +1,185 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/reservations:
+    post:
+      tags:
+      - reservation-controller
+      operationId: reserveConcert
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReservationResponse"
+  /api/payments:
+    post:
+      tags:
+      - payment-controller
+      operationId: requestPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestPaymentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RequestPaymentResponse"
+  /api/balances/charge:
+    post:
+      tags:
+      - balance-controller
+      operationId: chargeBalance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BalanceChargeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceChargeResponse"
+  /api/concerts/seats:
+    get:
+      tags:
+      - concert-controller
+      operationId: getSeats
+      parameters:
+      - name: request
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/ConcertSeatsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConcertSeatsResponse"
+  /api/concerts/dates:
+    get:
+      tags:
+      - concert-controller
+      operationId: getDates
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ConcertDatesResponse"
+  /api/balances/{userId}:
+    get:
+      tags:
+      - balance-controller
+      operationId: getBalance
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BalanceSearchResponse"
+components:
+  schemas:
+    ReservationRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        seatNo:
+          type: integer
+          format: int32
+        userId:
+          type: string
+    ReservationResponse:
+      type: object
+      properties:
+        result:
+          type: string
+    RequestPaymentRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        concertDetailId:
+          type: integer
+          format: int64
+        reservationId:
+          type: integer
+          format: int64
+        amount:
+          type: integer
+          format: int64
+    RequestPaymentResponse:
+      type: object
+      properties:
+        result:
+          type: string
+    BalanceChargeRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        amount:
+          type: integer
+          format: int64
+    BalanceChargeResponse:
+      type: object
+      properties:
+        balance:
+          type: string
+    ConcertSeatsRequest:
+      type: object
+    ConcertSeatsResponse:
+      type: object
+      properties:
+        seats:
+          type: array
+          items:
+            type: string
+    ConcertDatesResponse:
+      type: object
+      properties:
+        dates:
+          type: array
+          items:
+            type: string
+    BalanceSearchResponse:
+      type: object
+      properties:
+        balance:
+          type: integer
+          format: int64
