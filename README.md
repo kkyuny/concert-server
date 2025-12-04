@@ -1,13 +1,13 @@
-## 프로젝트
+# 🎫 콘서트 예약 서비스
+> 대기열 + 좌석 임시배정 + 포인트 충전식 결제 기반의 콘서트 예약 서비스.
 
-## Getting Started
+- STEP 02: 콘서트 예약 서비스의 **ERD**, **API 명세**, **인프라 구성**에 대한 설계문서 작성 
+  - ERD: draw.io 기반 작성
+  - API Spec: Swagger(OpenAPI 3.0) 기반 작성
+  - Infra: Mermaid 기반 다이어그램 작성
+- 과제가 진행 됨에 따라 다양한 기능과 추가 설명이 확장 예정입니다.
 
-### Prerequisites
-
-#### Running Docker Containers
-
-`local` profile 로 실행하기 위하여 인프라가 설정되어 있는 Docker 컨테이너를 실행해주셔야 합니다.
-
-```bash
-docker-compose up -d
-```
+## 🗂️ 문서
+- [ERD](./document/erd.md)
+- [Api-Spec](./document/api-spec.md)
+- [Infra](./document/infra.md)
