@@ -57,7 +57,7 @@ class ReservationQueryServiceTest {
         Long notExistsReservationId = 1L;
 
         given(reservationRepository.findById(notExistsReservationId))
-                .willThrow(NotFoundReservationException.class);
+                .willReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationQueryService.getReservation(notExistsReservationId))
             .isInstanceOf(NotFoundReservationException.class);
