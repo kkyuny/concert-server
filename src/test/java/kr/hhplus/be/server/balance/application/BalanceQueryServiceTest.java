@@ -3,17 +3,15 @@ package kr.hhplus.be.server.balance.application;
 import kr.hhplus.be.server.balance.api.dto.BalanceSearchResponse;
 import kr.hhplus.be.server.balance.domain.Balance;
 import kr.hhplus.be.server.balance.domain.NotFoundBalanceException;
-import kr.hhplus.be.server.balance.infrasturcture.BalanceRepository;
+import kr.hhplus.be.server.balance.infrastructure.BalanceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;

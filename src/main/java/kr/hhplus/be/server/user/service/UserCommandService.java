@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.user.service;
 
 import kr.hhplus.be.server.balance.domain.Balance;
-import kr.hhplus.be.server.balance.infrasturcture.BalanceRepository;
+import kr.hhplus.be.server.balance.infrastructure.BalanceRepository;
 import kr.hhplus.be.server.user.domain.User;
 import kr.hhplus.be.server.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
