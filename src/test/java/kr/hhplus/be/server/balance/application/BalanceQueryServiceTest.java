@@ -42,10 +42,9 @@ class BalanceQueryServiceTest {
     @Test
     void getBalance_fail() {
         Long userId = 1L;
-        Balance balance = Balance.create(2L);
 
         given(balanceRepository.getBalanceByUserId(userId))
-                .willThrow(NotFoundBalanceException.class);
+                .willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> balanceQueryService.getBalance(userId))
