@@ -4,14 +4,18 @@ public enum ReservationStatus {
     PENDING {
         @Override
         public boolean canTransitionTo(ReservationStatus next) {
-            return next == CONFIRMED || next == CANCELED || next == EXPIRED;
+            return next != null && (
+                    next.name().equals(CONFIRMED.name()) ||
+                    next.name().equals(CANCELED.name()) ||
+                    next.name().equals(EXPIRED.name())
+            );
         }
     },
 
     CONFIRMED {
         @Override
         public boolean canTransitionTo(ReservationStatus next) {
-            return next == CANCELED; // EXPIRED는 불가
+            return next != null && next.name().equals(CANCELED.name()); // EXPIRED는 불가
         }
     },
 
@@ -25,7 +29,7 @@ public enum ReservationStatus {
     EXPIRED {
         @Override
         public boolean canTransitionTo(ReservationStatus next) {
-            return false;  // 만료 후 변경 불가
+            return next.name().equals(EXPIRED.name());  // 만료 후 변경 불가(같은 상태만 예외적 허용)
         }
     };
 
