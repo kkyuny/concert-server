@@ -17,9 +17,8 @@ public class ReservationCommandService {
     private final ReservationRepository reservationRepository;
 
     public ReservationResponse createPendingReservation(Long userId, Long concertSeatId) {
-        Reservation reservation = Reservation.create(concertSeatId, userId);
+        Reservation reservation = Reservation.create(userId, concertSeatId);
         return ReservationResponse.of(reservationRepository.save(reservation));
-
     }
 
     public ReservationChangeResponse changeReservationStatus(Long reservationId, ReservationStatus reservationStatus) {

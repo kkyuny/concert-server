@@ -36,24 +36,25 @@ class ReservationControllerTest {
         // given
         Long userId = 1L;
         Long concertSeatId = 1L;
-
-        ReservationRequest reservationRequest = new ReservationRequest(userId, concertSeatId);
+        String token = "test-token";
+        ReservationRequest reservationRequest = new ReservationRequest(userId, concertSeatId, token);
         Reservation reservation = Reservation.create(userId, concertSeatId);
         ReservationResponse reservationResponse = ReservationResponse.of(reservation);
 
-        when(reservationFacade.initReservation(concertSeatId, userId))
+        when(reservationFacade.initReservation(reservationRequest.concertSeatId(), reservationRequest.userId(), reservationRequest.token()))
                 .thenReturn(reservationResponse);
 
         // when & then
         mockMvc.perform(post("/api/reservations")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Reservation-Token", token)
                         .content(objectMapper.writeValueAsString(reservationRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.reservationId").value(reservationResponse.reservationId()))
                 .andExpect(jsonPath("$.seatStatus").value(reservationResponse.seatStatus().name()));
 
-        verify(reservationFacade).initReservation(concertSeatId, userId);
+        verify(reservationFacade).initReservation(concertSeatId, userId, token);
     }
 
 }

@@ -1,4 +1,4 @@
 package kr.hhplus.be.server.reservation.api.dto;
 
-public record ReservationRequest(Long userId, Long concertSeatId) {
+public record ReservationRequest(Long userId, Long concertSeatId, String token) {
 }
