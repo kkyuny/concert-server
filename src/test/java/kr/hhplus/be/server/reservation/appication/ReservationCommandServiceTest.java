@@ -48,7 +48,7 @@ class ReservationCommandServiceTest {
         // given
         Long reservationId = 1L;
 
-        given(reservationRepository.findById(reservationId))
+        given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.empty());
 
         // when & then
@@ -64,7 +64,7 @@ class ReservationCommandServiceTest {
 
         Reservation reservation = Reservation.create(userId, reservationId);
 
-        given(reservationRepository.findById(reservationId))
+        given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.of(reservation));
 
         // when
@@ -86,7 +86,7 @@ class ReservationCommandServiceTest {
         Reservation reservation = Reservation.create(userId, reservationId);
         reservation.changeStatus(ReservationStatus.CONFIRMED);
 
-        given(reservationRepository.findById(reservationId))
+        given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.of(reservation));
 
         // when & then

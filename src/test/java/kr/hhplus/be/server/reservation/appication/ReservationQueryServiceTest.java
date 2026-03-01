@@ -33,7 +33,7 @@ class ReservationQueryServiceTest {
 
         Reservation reservation = Reservation.create(userId, concertSeatId);
 
-        given(reservationRepository.findById(reservationId))
+        given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.of(reservation));
 
         ReservationInfoResponse response =
@@ -45,14 +45,14 @@ class ReservationQueryServiceTest {
         assertThat(response.seatStatus()).isEqualTo(reservation.getStatus());
         assertThat(response.expiredAt()).isEqualTo(reservation.getExpiredAt());
 
-        verify(reservationRepository).findById(reservationId);
+        verify(reservationRepository).findByIdWithLock(reservationId);
     }
 
     @Test
     void getReservation_fail() {
         Long notExistsReservationId = 1L;
 
-        given(reservationRepository.findById(notExistsReservationId))
+        given(reservationRepository.findByIdWithLock(notExistsReservationId))
                 .willReturn(Optional.empty());
 
         assertThatThrownBy(() -> reservationQueryService.getReservation(notExistsReservationId))
