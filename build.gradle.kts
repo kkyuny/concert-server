@@ -36,14 +36,17 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Lombok
-    implementation("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
 
 	// Swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
-
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
+
+	// cache
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

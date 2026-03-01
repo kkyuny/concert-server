@@ -43,4 +43,8 @@ public class Reservation extends BaseEntity {
     public void expire() {
         changeStatus(ReservationStatus.EXPIRED);
     }
+
+    public void setStatusForTest(ReservationStatus status) {
+        this.status = status;
+    }
 }

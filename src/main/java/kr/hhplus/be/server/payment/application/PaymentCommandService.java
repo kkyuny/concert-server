@@ -2,7 +2,7 @@ package kr.hhplus.be.server.payment.application;
 
 import kr.hhplus.be.server.payment.api.dto.PaymentResponse;
 import kr.hhplus.be.server.payment.domain.Payment;
-import kr.hhplus.be.server.payment.infrasturcture.PaymentRepository;
+import kr.hhplus.be.server.payment.infrastructure.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

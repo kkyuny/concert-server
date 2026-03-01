@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 @Service
 public class PaymentFacade {
     private final PaymentCommandService paymentCommandService;
@@ -28,7 +28,8 @@ public class PaymentFacade {
         ReservationInfoResponse reservationInfoResponse = reservationQueryService.getReservation(reservationId);
 
         // 결제 실패
-        if (reservationInfoResponse.expiredAt().isBefore(LocalDateTime.now())) {
+        if (reservationInfoResponse.expiredAt().isBefore(LocalDateTime.now())
+                || reservationInfoResponse.seatStatus() == ReservationStatus.EXPIRED) {
             reservationCommandService.changeReservationStatus(reservationId, ReservationStatus.EXPIRED);
             concertCommandService.changeConcertSeatStaus(reservationInfoResponse.concertSeatId(), SeatStatus.AVAILABLE);
 

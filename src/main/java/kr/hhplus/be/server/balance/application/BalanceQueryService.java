@@ -3,7 +3,7 @@ package kr.hhplus.be.server.balance.application;
 import kr.hhplus.be.server.balance.api.dto.BalanceSearchResponse;
 import kr.hhplus.be.server.balance.domain.Balance;
 import kr.hhplus.be.server.balance.domain.NotFoundBalanceException;
-import kr.hhplus.be.server.balance.infrasturcture.BalanceRepository;
+import kr.hhplus.be.server.balance.infrastructure.BalanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

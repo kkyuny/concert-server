@@ -4,9 +4,7 @@ import kr.hhplus.be.server.balance.api.dto.BalanceChargeRequest;
 import kr.hhplus.be.server.balance.api.dto.BalanceChargeResponse;
 import kr.hhplus.be.server.balance.application.BalanceCommandService;
 import kr.hhplus.be.server.balance.application.BalanceQueryService;
-import kr.hhplus.be.server.balance.domain.Balance;
 import kr.hhplus.be.server.balance.api.dto.BalanceSearchResponse;
-import kr.hhplus.be.server.balance.infrasturcture.BalanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

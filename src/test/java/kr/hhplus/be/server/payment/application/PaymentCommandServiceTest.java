@@ -2,14 +2,13 @@ package kr.hhplus.be.server.payment.application;
 
 import kr.hhplus.be.server.payment.api.dto.PaymentResponse;
 import kr.hhplus.be.server.payment.domain.Payment;
-import kr.hhplus.be.server.payment.infrasturcture.PaymentRepository;
+import kr.hhplus.be.server.payment.infrastructure.PaymentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
