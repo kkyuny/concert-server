@@ -26,6 +26,15 @@ public class ConcertSeat extends BaseEntity {
     }
 
     public ConcertSeat changeStatus(SeatStatus status) {
+        if (this.status == SeatStatus.RESERVED) {
+            throw new CannotChangeSeatStatusException(this.id);
+        }
+
+        if (this.status == SeatStatus.HOLD &&
+                (status == SeatStatus.AVAILABLE || status == SeatStatus.HOLD)) {
+            throw new CannotChangeSeatStatusException(this.id);
+        }
+
         this.status = status;
         return this;
     }
