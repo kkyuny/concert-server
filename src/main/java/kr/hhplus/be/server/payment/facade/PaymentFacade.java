@@ -29,16 +29,16 @@ public class PaymentFacade {
 
         // 결제 실패
         if (reservationInfoResponse.expiredAt().isBefore(LocalDateTime.now())
-                || reservationInfoResponse.seatStatus() == ReservationStatus.EXPIRED) {
+                || reservationInfoResponse.seatStatus() != ReservationStatus.PENDING) {
             reservationCommandService.changeReservationStatus(reservationId, ReservationStatus.EXPIRED);
-            concertCommandService.changeConcertSeatStaus(reservationInfoResponse.concertSeatId(), SeatStatus.AVAILABLE);
+            concertCommandService.changeConcertSeatStatus(reservationInfoResponse.concertSeatId(), SeatStatus.AVAILABLE);
 
             return paymentCommandService.createFailPayment(reservationInfoResponse.userId(), reservationId, amount);
         }
 
         // 결제 성공
         reservationCommandService.changeReservationStatus(reservationId, ReservationStatus.CONFIRMED);
-        concertCommandService.changeConcertSeatStaus(reservationInfoResponse.concertSeatId(), SeatStatus.RESERVED);
+        concertCommandService.changeConcertSeatStatus(reservationInfoResponse.concertSeatId(), SeatStatus.RESERVED);
 
         return paymentCommandService.createPayment(reservationInfoResponse.userId(), reservationId, amount);
     }
