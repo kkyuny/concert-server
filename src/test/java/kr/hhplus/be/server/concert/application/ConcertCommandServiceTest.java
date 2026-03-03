@@ -35,11 +35,11 @@ class ConcertCommandServiceTest {
 
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
 
-        given(concertSeatRepository.findById(anyLong()))
+        given(concertSeatRepository.findByIdForLock(anyLong()))
                 .willReturn(Optional.of(concertSeat));
 
         ConcertSeatStatusResponse concertSeatStatusResponse = concertCommandService
-                .changeConcertSeatStaus(concertSeatId, changeSeatStatus);
+                .changeConcertSeatStatus(concertSeatId, changeSeatStatus);
 
         assertThat(concertSeatStatusResponse.seatStatus()).isEqualTo(changeSeatStatus);
     }
@@ -54,16 +54,15 @@ class ConcertCommandServiceTest {
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
         concertSeat.changeStatus(SeatStatus.HOLD);
 
-        given(concertSeatRepository.findById(anyLong()))
+        given(concertSeatRepository.findByIdForLock(anyLong()))
                 .willReturn(Optional.of(concertSeat));
 
         ConcertSeatStatusResponse concertSeatStatusResponse = concertCommandService
-                .changeConcertSeatStaus(concertSeatId, changeSeatStatus);
+                .changeConcertSeatStatus(concertSeatId, changeSeatStatus);
 
         assertThat(concertSeatStatusResponse.seatStatus()).isEqualTo(changeSeatStatus);
     }
 
-    /* TODO: 만료 후 갱신 테스트로 한시적 제외
     @Test
     void changeSeatStatus_holdToAvailable_fail() {
         Long concertDetailId = 1L;
@@ -74,11 +73,11 @@ class ConcertCommandServiceTest {
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
         concertSeat.changeStatus(SeatStatus.HOLD);
 
-        given(concertSeatRepository.findById(anyLong()))
+        given(concertSeatRepository.findByIdForLock(anyLong()))
                 .willReturn(Optional.of(concertSeat));
 
         assertThatThrownBy(() ->
-                concertCommandService.changeConcertSeatStaus(concertSeatId, changeSeatStatus))
+                concertCommandService.changeConcertSeatStatus(concertSeatId, changeSeatStatus))
             .isInstanceOf(CannotChangeSeatStatusException.class);
     }
 
@@ -92,11 +91,11 @@ class ConcertCommandServiceTest {
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
         concertSeat.changeStatus(SeatStatus.HOLD);
 
-        given(concertSeatRepository.findById(anyLong()))
+        given(concertSeatRepository.findByIdForLock(anyLong()))
                 .willReturn(Optional.of(concertSeat));
 
         assertThatThrownBy(() ->
-                concertCommandService.changeConcertSeatStaus(concertSeatId, changeSeatStatus))
+                concertCommandService.changeConcertSeatStatus(concertSeatId, changeSeatStatus))
                 .isInstanceOf(CannotChangeSeatStatusException.class);
     }
 
@@ -111,12 +110,11 @@ class ConcertCommandServiceTest {
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
         concertSeat.changeStatus(SeatStatus.RESERVED);
 
-        given(concertSeatRepository.findById(anyLong()))
+        given(concertSeatRepository.findByIdForLock(anyLong()))
                 .willReturn(Optional.of(concertSeat));
 
         assertThatThrownBy(() ->
-                concertCommandService.changeConcertSeatStaus(concertSeatId, changeSeatStatus))
+                concertCommandService.changeConcertSeatStatus(concertSeatId, changeSeatStatus))
                 .isInstanceOf(CannotChangeSeatStatusException.class);
     }
-     */
 }

@@ -20,7 +20,7 @@ public class ReservationFacade {
     @Transactional
     public ReservationResponse initReservation(Long concertSeatId, Long userId, String token){
         reservationTokenService.validateToken(token, userId, concertSeatId);
-        concertCommandService.changeConcertSeatStaus(concertSeatId, SeatStatus.HOLD);
+        concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);
         return reservationCommandService.createPendingReservation(userId, concertSeatId);
     }
 }

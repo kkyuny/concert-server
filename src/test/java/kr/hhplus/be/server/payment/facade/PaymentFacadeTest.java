@@ -18,12 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -66,7 +64,7 @@ class PaymentFacadeTest {
         // 3) 좌석 상태 변경 Mock
         ConcertSeat concertSeat = ConcertSeat.create(1L, 1);
         ConcertSeatStatusResponse concertSeatStatusResponse = ConcertSeatStatusResponse.of(concertSeat);
-        given(concertCommandService.changeConcertSeatStaus(concertSeatId, SeatStatus.RESERVED))
+        given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.RESERVED))
                 .willReturn(concertSeatStatusResponse);
 
         // 4) 결제 생성 Mock
@@ -84,7 +82,7 @@ class PaymentFacadeTest {
 
         verify(reservationQueryService).getReservation(reservationId);
         verify(reservationCommandService).changeReservationStatus(reservationId, ReservationStatus.CONFIRMED);
-        verify(concertCommandService).changeConcertSeatStaus(concertSeatId, SeatStatus.RESERVED);
+        verify(concertCommandService).changeConcertSeatStatus(concertSeatId, SeatStatus.RESERVED);
         verify(paymentCommandService).createPayment(userId, reservationId, amount);
     }
 
@@ -121,7 +119,7 @@ class PaymentFacadeTest {
         ConcertSeatStatusResponse seatStatusResponse =
                 ConcertSeatStatusResponse.of(availableSeat);
 
-        given(concertCommandService.changeConcertSeatStaus(concertSeatId, SeatStatus.AVAILABLE))
+        given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.AVAILABLE))
                 .willReturn(seatStatusResponse);
 
         // 실패 결제 생성 Mock
@@ -141,7 +139,7 @@ class PaymentFacadeTest {
 
         verify(reservationQueryService).getReservation(reservationId);
         verify(reservationCommandService).changeReservationStatus(reservationId, ReservationStatus.EXPIRED);
-        verify(concertCommandService).changeConcertSeatStaus(concertSeatId, SeatStatus.AVAILABLE);
+        verify(concertCommandService).changeConcertSeatStatus(concertSeatId, SeatStatus.AVAILABLE);
         verify(paymentCommandService).createFailPayment(userId, reservationId, amount);
     }
 }

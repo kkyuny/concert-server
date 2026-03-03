@@ -14,7 +14,7 @@ public class ReservationQueryService {
     private final ReservationRepository reservationRepository;
 
     public ReservationInfoResponse getReservation(Long reservationId){
-        return ReservationInfoResponse.of(reservationRepository.findById(reservationId).orElseThrow(
+        return ReservationInfoResponse.of(reservationRepository.findByIdWithLock(reservationId).orElseThrow(
                 () -> new NotFoundReservationException(reservationId)));
     }
 }

@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ConcertCommandService {
     private final ConcertSeatRepository concertSeatRepository;
 
-    public ConcertSeatStatusResponse changeConcertSeatStaus(Long concertSeatId, SeatStatus seatStatus) {
-        ConcertSeat concertSeat = concertSeatRepository.findById(concertSeatId)
+    public ConcertSeatStatusResponse changeConcertSeatStatus(Long concertSeatId, SeatStatus seatStatus) {
+        ConcertSeat concertSeat = concertSeatRepository.findByIdForLock(concertSeatId)
                 .orElseThrow(() -> new NotFoundConcertSeatException(concertSeatId));
 
         return ConcertSeatStatusResponse.of(concertSeat.changeStatus(seatStatus));

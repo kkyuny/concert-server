@@ -30,6 +30,17 @@ public class Reservation extends BaseEntity {
         return reservation;
     }
 
+    public static Reservation create(Long userId, Long concertSeatId, LocalDateTime time) {
+        Reservation reservation = new Reservation();
+
+        reservation.userId = userId;
+        reservation.concertSeatId = concertSeatId;
+        reservation.status = ReservationStatus.PENDING;
+        reservation.expiredAt = time;
+
+        return reservation;
+    }
+
     public Reservation changeStatus(ReservationStatus nextStatus) {
         if (!this.status.canTransitionTo(nextStatus)) {
             throw new CannotChangeReservationStatusException(this.id);

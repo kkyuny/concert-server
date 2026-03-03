@@ -22,7 +22,7 @@ public class ReservationCommandService {
     }
 
     public ReservationChangeResponse changeReservationStatus(Long reservationId, ReservationStatus reservationStatus) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId).orElseThrow(
                 () -> new NotFoundReservationException(reservationId));
 
         return ReservationChangeResponse.of(reservation.changeStatus(reservationStatus));

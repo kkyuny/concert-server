@@ -49,7 +49,7 @@ class ReservationFacadeTest {
                 .willReturn(ReservationResponse.of(reservation));
 
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
-        given(concertCommandService.changeConcertSeatStaus(concertSeatId, SeatStatus.HOLD))
+        given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD))
                 .willReturn(ConcertSeatStatusResponse.of(concertSeat));
 
         ReservationResponse reservationResponse = reservationFacade.initReservation(concertSeatId, userId, token);
@@ -62,6 +62,6 @@ class ReservationFacadeTest {
                 .createPendingReservation(userId, concertSeatId);
 
         verify(concertCommandService, times(1))
-                .changeConcertSeatStaus(concertSeatId, SeatStatus.HOLD);
+                .changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);
     }
 }
