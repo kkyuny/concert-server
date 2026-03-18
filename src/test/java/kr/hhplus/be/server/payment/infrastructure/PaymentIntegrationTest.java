@@ -19,12 +19,16 @@ import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import kr.hhplus.be.server.reservation.facade.ReservationFacade;
 import kr.hhplus.be.server.reservation.infrastructure.ReservationRepository;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,6 +60,17 @@ class PaymentIntegrationTest {
     @Autowired
     private ReservationTokenService reservationTokenService;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @BeforeEach
+    void clearRedis() {
+        Assertions.assertNotNull(stringRedisTemplate.getConnectionFactory());
+        stringRedisTemplate.getConnectionFactory()
+                .getConnection()
+                .flushAll();
+    }
+
     @Test
     void executePayment_success() {
 
@@ -73,7 +88,7 @@ class PaymentIntegrationTest {
         String token =
                 reservationTokenService.issueToken(userId, seat.getId());
 
-        ReservationResponse reservationResponse = reservationFacade.initReservation(seat.getId(), userId, token);
+        ReservationResponse reservationResponse = reservationFacade.initReservation(seat.getId(), userId, token, concert.getId());
 
         // when
         PaymentResponse response = paymentFacade.executePayment(reservationResponse.reservationId(), 500L);
@@ -91,6 +106,57 @@ class PaymentIntegrationTest {
         assertThat(response).isNotNull();
         assertThat(response.paymentId()).isNotNull();
         assertThat(response.paymentStatus()).isEqualTo(PaymentStatus.CAPTURED);
+    }
+
+    @Test
+    void executePayment_ranking_집계_정상동작() {
+        // given
+        Concert concert1 = concertRepository.save(Concert.create("콘서트1", ""));
+        Concert concert2 = concertRepository.save(Concert.create("콘서트2", ""));
+
+        ConcertDetail detail1 = concertDetailRepository.save(
+                ConcertDetail.create(concert1, LocalDate.now(), 500)
+        );
+        ConcertDetail detail2 = concertDetailRepository.save(
+                ConcertDetail.create(concert2, LocalDate.now(), 500)
+        );
+
+        ConcertSeat seat1 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 1));
+        ConcertSeat seat2 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 2));
+        ConcertSeat seat3 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 3));
+        ConcertSeat seat4 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 4));
+
+        ConcertSeat seat5 = concertSeatRepository.save(ConcertSeat.create(detail2.getId(), 1));
+        ConcertSeat seat6 = concertSeatRepository.save(ConcertSeat.create(detail2.getId(), 2));
+
+        Long userId = 100L;
+
+        // concert1 → 4번 결제
+        for (ConcertSeat seat : List.of(seat1, seat2, seat3, seat4)) {
+            String token = reservationTokenService.issueToken(userId, seat.getId());
+            ReservationResponse res = reservationFacade.initReservation(seat.getId(), userId, token, concert1.getId());
+            paymentFacade.executePayment(res.reservationId(), 500L);
+        }
+
+        // concert2 → 2번 결제
+        for (ConcertSeat seat : List.of(seat5, seat6)) {
+            String token = reservationTokenService.issueToken(userId, seat.getId());
+            ReservationResponse res = reservationFacade.initReservation(seat.getId(), userId, token, concert2.getId());
+            paymentFacade.executePayment(res.reservationId(), 500L);
+        }
+
+        // when
+        String dailyKey = "concert:ranking:daily:" + LocalDate.now();
+
+        Double score1 = stringRedisTemplate.opsForZSet()
+                .score(dailyKey, concert1.getId().toString());
+
+        Double score2 = stringRedisTemplate.opsForZSet()
+                .score(dailyKey, concert2.getId().toString());
+
+        // then
+        assertThat(score1).isEqualTo(4.0);
+        assertThat(score2).isEqualTo(2.0);
     }
 
     /* status 변경 로직에 의해(상태 강제 변경 불가) 테스트 제외

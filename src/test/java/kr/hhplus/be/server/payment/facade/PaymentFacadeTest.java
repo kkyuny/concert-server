@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.payment.facade;
 
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.api.dto.ConcertSeatStatusResponse;
 import kr.hhplus.be.server.concert.application.ConcertCommandService;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
@@ -13,18 +14,23 @@ import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
 import kr.hhplus.be.server.reservation.appication.ReservationQueryService;
 import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
+@Import(TestRedisConfiguration.class)
 @ExtendWith(MockitoExtension.class)
 class PaymentFacadeTest {
     @Mock
@@ -39,8 +45,20 @@ class PaymentFacadeTest {
     @Mock
     private ConcertCommandService concertCommandService;
 
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
     @InjectMocks
     private PaymentFacade paymentFacade;
+
+    @Mock
+    private ZSetOperations<String, String> zSetOperations;
+
+    @BeforeEach
+    void setup() {
+        // opsForZSet()는 final이라 willReturn() 못 씀
+        lenient().doReturn(zSetOperations).when(redisTemplate).opsForZSet();
+    }
 
     @Test
     void executePaymentTest() {
@@ -51,7 +69,7 @@ class PaymentFacadeTest {
         Long amount = 500L;
 
         // 1) 예약 정보 조회 Mock
-        Reservation reservation = Reservation.create(userId, concertSeatId);
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
         ReservationInfoResponse reservationInfoResponse = ReservationInfoResponse.of(reservation);
         given(reservationQueryService.getReservation(reservationId))
                 .willReturn(reservationInfoResponse);
@@ -99,14 +117,15 @@ class PaymentFacadeTest {
                 userId,
                 concertSeatId,
                 ReservationStatus.PENDING,
-                LocalDateTime.now().minusMinutes(1) // 만료 처리
+                LocalDateTime.now().minusMinutes(1), // 만료 처리
+                1L
         );
 
         given(reservationQueryService.getReservation(reservationId))
                 .willReturn(expiredInfo);
 
         // 예약 생성 Mock
-        Reservation expiredReservation = Reservation.create(userId, concertSeatId);
+        Reservation expiredReservation = Reservation.create(userId, concertSeatId, 1L);
         ReservationChangeResponse changeResponse = ReservationChangeResponse.of(expiredReservation);
 
         given(reservationCommandService.changeReservationStatus(reservationId, ReservationStatus.EXPIRED))
