@@ -37,11 +37,11 @@ class ReservationControllerTest {
         Long userId = 1L;
         Long concertSeatId = 1L;
         String token = "test-token";
-        ReservationRequest reservationRequest = new ReservationRequest(userId, concertSeatId, token);
-        Reservation reservation = Reservation.create(userId, concertSeatId);
+        ReservationRequest reservationRequest = new ReservationRequest(userId, concertSeatId, token, 1L);
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
         ReservationResponse reservationResponse = ReservationResponse.of(reservation);
 
-        when(reservationFacade.initReservation(reservationRequest.concertSeatId(), reservationRequest.userId(), reservationRequest.token()))
+        when(reservationFacade.initReservation(reservationRequest.concertSeatId(), reservationRequest.userId(), reservationRequest.token(), 1L))
                 .thenReturn(reservationResponse);
 
         // when & then
@@ -54,7 +54,7 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.reservationId").value(reservationResponse.reservationId()))
                 .andExpect(jsonPath("$.seatStatus").value(reservationResponse.seatStatus().name()));
 
-        verify(reservationFacade).initReservation(concertSeatId, userId, token);
+        verify(reservationFacade).initReservation(concertSeatId, userId, token, 1L);
     }
 
 }

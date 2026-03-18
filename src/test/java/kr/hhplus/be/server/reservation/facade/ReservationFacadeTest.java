@@ -44,22 +44,22 @@ class ReservationFacadeTest {
         doNothing().when(reservationTokenService)
                 .validateToken(token, userId, concertSeatId);
 
-        Reservation reservation = Reservation.create(userId, concertSeatId);
-        given(reservationCommandService.createPendingReservation(userId, concertSeatId))
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
+        given(reservationCommandService.createPendingReservation(userId, concertSeatId, 1L))
                 .willReturn(ReservationResponse.of(reservation));
 
         ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
         given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD))
                 .willReturn(ConcertSeatStatusResponse.of(concertSeat));
 
-        ReservationResponse reservationResponse = reservationFacade.initReservation(concertSeatId, userId, token);
+        ReservationResponse reservationResponse = reservationFacade.initReservation(concertSeatId, userId, token, 1L);
         assertThat(reservationResponse.seatStatus()).isEqualTo(ReservationStatus.PENDING);
 
         verify(reservationTokenService, times(1))
                 .validateToken(token, userId, concertSeatId);
 
         verify(reservationCommandService, times(1))
-                .createPendingReservation(userId, concertSeatId);
+                .createPendingReservation(userId, concertSeatId, 1L);
 
         verify(concertCommandService, times(1))
                 .changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);

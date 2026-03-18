@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationCommandService {
     private final ReservationRepository reservationRepository;
 
-    public ReservationResponse createPendingReservation(Long userId, Long concertSeatId) {
-        Reservation reservation = Reservation.create(userId, concertSeatId);
+    public ReservationResponse createPendingReservation(Long userId, Long concertSeatId, Long concertId) {
+        Reservation reservation = Reservation.create(userId, concertSeatId, concertId);
         return ReservationResponse.of(reservationRepository.save(reservation));
     }
 

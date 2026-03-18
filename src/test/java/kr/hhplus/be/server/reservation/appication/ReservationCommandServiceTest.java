@@ -34,11 +34,11 @@ class ReservationCommandServiceTest {
         Long userId = 1L;
         Long concertSeatId = 1L;
 
-        Reservation reservation = Reservation.create(userId, concertSeatId);
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
 
         given(reservationRepository.save(any(Reservation.class))).willReturn(reservation);
 
-        ReservationResponse reservationResponse = reservationCommandService.createPendingReservation(userId, concertSeatId);
+        ReservationResponse reservationResponse = reservationCommandService.createPendingReservation(userId, concertSeatId, 1L);
 
         assertThat(reservationResponse.reservationId()).isEqualTo(reservation.getId());
     }
@@ -62,7 +62,7 @@ class ReservationCommandServiceTest {
         Long userId = 1L;
         Long reservationId = 1L;
 
-        Reservation reservation = Reservation.create(userId, reservationId);
+        Reservation reservation = Reservation.create(userId, reservationId, 1L);
 
         given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.of(reservation));
@@ -83,7 +83,7 @@ class ReservationCommandServiceTest {
         Long userId = 1L;
         Long reservationId = 1L;
 
-        Reservation reservation = Reservation.create(userId, reservationId);
+        Reservation reservation = Reservation.create(userId, reservationId, 1L);
         reservation.changeStatus(ReservationStatus.CONFIRMED);
 
         given(reservationRepository.findByIdWithLock(reservationId))

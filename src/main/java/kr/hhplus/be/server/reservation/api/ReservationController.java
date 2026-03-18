@@ -14,6 +14,6 @@ public class ReservationController {
 
     @PostMapping
     public ReservationResponse reserveConcert(@RequestBody ReservationRequest reservationRequest) {
-        return reservationFacade.initReservation(reservationRequest.concertSeatId(), reservationRequest.userId(), reservationRequest.token());
+        return reservationFacade.initReservation(reservationRequest.concertSeatId(), reservationRequest.userId(), reservationRequest.token(), reservationRequest.concertId());
     }
 }

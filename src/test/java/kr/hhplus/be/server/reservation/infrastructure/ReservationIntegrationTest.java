@@ -73,7 +73,7 @@ class ReservationIntegrationTest {
                 reservationTokenService.issueToken(userId, seat.getId());
 
         // when
-        ReservationResponse response = reservationFacade.initReservation(seat.getId(), userId, token);
+        ReservationResponse response = reservationFacade.initReservation(seat.getId(), userId, token, concert.getId());
 
         // then
         // 1. 좌석 상태 변경 확인

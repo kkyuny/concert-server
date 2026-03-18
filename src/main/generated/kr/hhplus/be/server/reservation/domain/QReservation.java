@@ -21,6 +21,8 @@ public class QReservation extends EntityPathBase<Reservation> {
 
     public final QBaseEntity _super = new QBaseEntity(this);
 
+    public final NumberPath<Long> concertId = createNumber("concertId", Long.class);
+
     public final NumberPath<Long> concertSeatId = createNumber("concertSeatId", Long.class);
 
     //inherited

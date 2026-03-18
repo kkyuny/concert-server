@@ -18,9 +18,9 @@ public class ReservationFacade {
     private final ReservationTokenService reservationTokenService;
 
     @Transactional
-    public ReservationResponse initReservation(Long concertSeatId, Long userId, String token){
+    public ReservationResponse initReservation(Long concertSeatId, Long userId, String token, Long concertId){
         reservationTokenService.validateToken(token, userId, concertSeatId);
         concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);
-        return reservationCommandService.createPendingReservation(userId, concertSeatId);
+        return reservationCommandService.createPendingReservation(userId, concertSeatId, concertId);
     }
 }

@@ -38,7 +38,7 @@ class PaymentConcurrencyTest {
         );
 
         Reservation reservation = reservationRepository.save(
-                Reservation.create(1L, seat.getId())
+                Reservation.create(1L, seat.getId(), 1L)
         );
 
         int threadCount = 10;

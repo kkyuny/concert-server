@@ -33,7 +33,7 @@ class ReservationQueryServiceTest {
         Long concertSeatId = 1L;
         Long reservationId = 1L;
 
-        Reservation reservation = Reservation.create(userId, concertSeatId);
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
 
         given(reservationRepository.findByIdWithLock(reservationId))
                 .willReturn(Optional.of(reservation));
