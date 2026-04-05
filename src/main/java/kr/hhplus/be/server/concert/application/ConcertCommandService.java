@@ -39,6 +39,9 @@ public class ConcertCommandService {
             ConcertSeat concertSeat = concertSeatRepository.findByIdForLock(concertSeatId)
                     .orElseThrow(() -> new NotFoundConcertSeatException(concertSeatId));
 
+            // 좌석 단위 캐시 삭제
+            redisTemplate.delete("seatStatus::seat:" + concertSeatId);
+
             return ConcertSeatStatusResponse.of(concertSeat.changeStatus(seatStatus));
         } finally {
             // 락 해제: 값이 본인이 설정한 값일 때만 삭제

@@ -68,7 +68,7 @@ class PaymentFacadeRedisLockIntegrationTest {
         );
         ConcertSeat seat = concertSeatRepository.save(ConcertSeat.create(detail.getId(), 1));
 
-        Long reservationId = reservationCommandService.createPendingReservation(100L, seat.getId()).reservationId();
+        Long reservationId = reservationCommandService.createPendingReservation(100L, seat.getId(), concert.getId()).reservationId();
 
         int totalUsers = 10;
         CountDownLatch latch = new CountDownLatch(totalUsers);

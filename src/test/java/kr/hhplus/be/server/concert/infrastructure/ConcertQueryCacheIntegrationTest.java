@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.concert.infrastructure;
 
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.application.ConcertQueryService;
 import kr.hhplus.be.server.concert.domain.Concert;
 import kr.hhplus.be.server.concert.domain.ConcertDetail;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.LocalDate;
@@ -16,6 +18,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@Import(TestRedisConfiguration.class) // 테스트용 RedisCacheManager 적용
 class ConcertQueryCacheIntegrationTest {
 
     @Autowired
@@ -58,6 +61,12 @@ class ConcertQueryCacheIntegrationTest {
         Set<String> keys = redisTemplate.keys("*");
         System.out.println("Redis keys: " + keys);
 
+        // 캐시 값 확인
+        keys.forEach(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            System.out.println("Key: " + key + " | Value: " + value);
+        });
+
         assertThat(keys).contains("concerts::allConcerts");
     }
 
@@ -68,31 +77,51 @@ class ConcertQueryCacheIntegrationTest {
         Set<String> keys = redisTemplate.keys("*");
         System.out.println("Redis keys: " + keys);
 
+        keys.forEach(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            System.out.println("Key: " + key + " | Value: " + value);
+        });
+
         assertThat(keys).contains("concertDates::concertDates:" + concertId);
     }
 
     @Test
     void testAvailableSeatsCache() {
         LocalDate date = LocalDate.of(2026, 3, 1);
+
         concertQueryService.getAvailableSeats(concertDetailId, date);
 
         Set<String> keys = redisTemplate.keys("*");
-        System.out.println("Redis keys: " + keys);
+        System.out.println("Redis keys after first get: " + keys);
+        keys.forEach(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            System.out.println("Key: " + key + " | Value: " + value);
+        });
 
         assertThat(keys).contains("availableSeats::availableSeats:" + concertDetailId);
 
-        // 캐시 무효화 후 다시 조회
+        // 캐시 무효화
         concertQueryService.evictAvailableSeatsCache(concertDetailId);
-        concertQueryService.getAvailableSeats(concertDetailId, date);
 
         keys = redisTemplate.keys("*");
         System.out.println("Redis keys after eviction: " + keys);
-        assertThat(keys).contains("availableSeats::availableSeats:" + concertDetailId);
-    }
+        keys.forEach(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            System.out.println("Key: " + key + " | Value: " + value);
+        });
 
-    @Test
-    void printAllCacheKeys() {
-        Set<String> keys = redisTemplate.keys("*");
-        System.out.println("All Redis keys: " + keys);
+        assertThat(keys).doesNotContain("availableSeats::availableSeats:" + concertDetailId);
+
+        // 다시 조회 → 캐시 재생성
+        concertQueryService.getAvailableSeats(concertDetailId, date);
+
+        keys = redisTemplate.keys("*");
+        System.out.println("Redis keys after second get: " + keys);
+        keys.forEach(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            System.out.println("Key: " + key + " | Value: " + value);
+        });
+
+        assertThat(keys).contains("availableSeats::availableSeats:" + concertDetailId);
     }
 }
