@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -75,7 +76,7 @@ class QueueServiceTest {
     }
 
     /**
-     * ✅ 2. 슬롯 반환 후 다음 유저 진입
+     * ✅ 2. 대기열 상태 확인 테스트
      */
     @Test
     void 마지막_유저_대기상태_확인() throws InterruptedException {
@@ -98,13 +99,18 @@ class QueueServiceTest {
     }
 
     @Test
-    void 마지막_유저가_슬롯_반환_후_진입한다() throws InterruptedException {
-        int totalUsers = 6; // 6명
+    void 마지막_유저는_큐에_대기했다가_진입한다() throws InterruptedException {
+        int maxConcurrent = 5;
 
-        CountDownLatch latch = new CountDownLatch(totalUsers);
+        CountDownLatch runningLatch = new CountDownLatch(maxConcurrent);
+        CountDownLatch doneLatch = new CountDownLatch(maxConcurrent + 1);
+
         AtomicInteger successCount = new AtomicInteger(0);
 
-        for (int i = 0; i < totalUsers; i++) {
+        String waitingUser = "user5";
+
+        // 1. 5명 먼저 실행 (슬롯 점유 + 오래 유지)
+        for (int i = 0; i < maxConcurrent; i++) {
             final String userId = "user" + i;
 
             new Thread(() -> {
@@ -112,25 +118,93 @@ class QueueServiceTest {
 
                 if (permit) {
                     successCount.incrementAndGet();
+                    runningLatch.countDown(); // 🔥 실행 진입
+
                     try {
-                        // facade 실행 시간 가정
-                        Thread.sleep(500);
+                        Thread.sleep(2000); // 🔥 슬롯 유지
                     } catch (InterruptedException ignored) {}
+
                     queueService.releaseSlot();
                 }
 
+                doneLatch.countDown();
+            }).start();
+        }
+
+        // 2. 5명이 실제 실행 상태 될 때까지 대기
+        runningLatch.await();
+
+        // 3. 6번째 유저 실행
+        Thread t = new Thread(() -> {
+            boolean permit = queueService.waitForPermit(waitingUser, 5);
+            if (permit) {
+                successCount.incrementAndGet();
+                queueService.releaseSlot();
+            }
+            doneLatch.countDown();
+        });
+        t.start();
+
+        // 🔥 4. 중간 상태에서 "큐 진입" 검증
+        long start = System.currentTimeMillis();
+        boolean queued = false;
+
+        while (System.currentTimeMillis() - start < 2000) {
+            int pos = queueService.getQueuePosition(waitingUser);
+
+            if (pos != -1) { // 🔥 핵심: 큐에 들어갔는지만 본다
+                queued = true;
+                break;
+            }
+
+            Thread.sleep(50);
+        }
+
+        assertThat(queued).isTrue(); // ✔ 큐 진입 확인
+
+        // 5. 전체 종료 대기
+        doneLatch.await();
+
+        // 6. 최종 검증
+        assertThat(successCount.get()).isEqualTo(6);
+        assertThat(queueService.getQueuePosition(waitingUser)).isEqualTo(-1);
+    }
+
+    @Test
+    void 마지막_유저는_슬롯꽉차면_permit_false() throws InterruptedException {
+        int totalUsers = 6;
+        int maxConcurrent = 5;
+
+        CountDownLatch latch = new CountDownLatch(maxConcurrent); // 앞 5명만 작업
+        AtomicInteger successCount = new AtomicInteger(0);
+
+        // 1. 앞 5명 슬롯 점유
+        for (int i = 0; i < maxConcurrent; i++) {
+            final String userId = "user" + i;
+            new Thread(() -> {
+                boolean permit = queueService.waitForPermit(userId, 5); // 충분히 기다림
+                if (permit) {
+                    successCount.incrementAndGet();
+                    try { Thread.sleep(2000); } catch (InterruptedException ignored) {} // slot 점유 시간
+                    queueService.releaseSlot();
+                }
                 latch.countDown();
             }).start();
         }
 
+        // 2. 5명 스레드가 slot 점유할 시간 확보
+        Thread.sleep(100); // CPU 스케줄러에 따라 조금 더 늘려도 됨
+
+        // 3. 마지막 유저 시도
+        String lastUser = "user5";
+        boolean permitForLast = queueService.waitForPermit(lastUser, 1); // 대기 시간 짧음 → false 예상
+
+        // 4. 앞 5명 종료 대기
         latch.await();
 
-        // 🔥 6번째 유저도 마지막에 진입 가능해야 함
-        List<String> queue = queueService.getQueue("api:reservation:queue");
-        assertThat(queue).doesNotContain("user5"); // 6번째 유저는 이미 처리되어 큐에서 제거됨
-
-        // 🔥 최대 동시 처리 수는 5
-        assertThat(successCount.get()).isEqualTo(6);
+        // 5. 검증
+        assertThat(permitForLast).isFalse(); // 마지막 유저는 slot 못 가져야 함
+        assertThat(successCount.get()).isEqualTo(maxConcurrent); // 앞 5명만 성공
     }
 
     /**
