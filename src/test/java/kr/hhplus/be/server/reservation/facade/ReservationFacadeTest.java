@@ -9,11 +9,13 @@ import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
 import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
 import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
+import kr.hhplus.be.server.reservation.event.ReservationCreatedEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -21,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationFacadeTest {
+
     @Mock
     private ReservationCommandService reservationCommandService;
 
@@ -29,6 +32,9 @@ class ReservationFacadeTest {
 
     @Mock
     private ReservationTokenService reservationTokenService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ReservationFacade reservationFacade;
@@ -63,5 +69,8 @@ class ReservationFacadeTest {
 
         verify(concertCommandService, times(1))
                 .changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);
+
+        verify(eventPublisher, times(1))
+                .publishEvent(any(ReservationCreatedEvent.class));
     }
 }
