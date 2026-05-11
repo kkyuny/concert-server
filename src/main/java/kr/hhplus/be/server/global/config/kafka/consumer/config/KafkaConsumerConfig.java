@@ -5,6 +5,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -12,6 +13,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import java.util.HashMap;
 import java.util.Map;
 
+@Profile("!test")
 @Configuration
 public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
@@ -31,8 +33,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListener(){
-        ConcurrentKafkaListenerContainerFactory<String, String> listener
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListener(){
+        ConcurrentKafkaListenerContainerFactory<String, Object> listener
                 = new ConcurrentKafkaListenerContainerFactory<>();
         listener.setConsumerFactory(consumerFactory());
         // listener.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL); // 수동 커밋 옵션
