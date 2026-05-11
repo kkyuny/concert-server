@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.payment.facade;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
 import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.api.dto.ConcertSeatStatusResponse;
 import kr.hhplus.be.server.concert.application.ConcertCommandService;
@@ -8,6 +9,7 @@ import kr.hhplus.be.server.concert.domain.SeatStatus;
 import kr.hhplus.be.server.payment.api.dto.PaymentResponse;
 import kr.hhplus.be.server.payment.application.PaymentCommandService;
 import kr.hhplus.be.server.payment.domain.Payment;
+import kr.hhplus.be.server.payment.event.PaymentCompletedEvent;
 import kr.hhplus.be.server.reservation.api.dto.ReservationChangeResponse;
 import kr.hhplus.be.server.reservation.api.dto.ReservationInfoResponse;
 import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
@@ -15,14 +17,17 @@ import kr.hhplus.be.server.reservation.appication.ReservationQueryService;
 import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
@@ -30,7 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
-@Import(TestRedisConfiguration.class)
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 @ExtendWith(MockitoExtension.class)
 class PaymentFacadeTest {
     @Mock
@@ -52,6 +58,9 @@ class PaymentFacadeTest {
     private PaymentFacade paymentFacade;
 
     @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
     private ZSetOperations<String, String> zSetOperations;
 
     @BeforeEach
@@ -61,6 +70,7 @@ class PaymentFacadeTest {
     }
 
     @Test
+    @DisplayName("결제가 성공하면 예약/좌석 상태가 변경되고 결제 완료 이벤트가 발행된다")
     void executePaymentTest() {
         // given
         Long reservationId = 1L;
@@ -68,40 +78,40 @@ class PaymentFacadeTest {
         Long concertSeatId = 1L;
         Long amount = 500L;
 
-        // 1) 예약 정보 조회 Mock
+        // 1) 예약 정보 Mock
         Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
-        ReservationInfoResponse reservationInfoResponse = ReservationInfoResponse.of(reservation);
         given(reservationQueryService.getReservation(reservationId))
-                .willReturn(reservationInfoResponse);
+                .willReturn(ReservationInfoResponse.of(reservation));
 
         // 2) 예약 상태 변경 Mock
-        ReservationChangeResponse reservationChangeResponse = ReservationChangeResponse.of(reservation);
-        given(reservationCommandService.changeReservationStatus(reservationId, ReservationStatus.CONFIRMED))
-                .willReturn(reservationChangeResponse);
+        given(reservationCommandService.changeReservationStatus(anyLong(), any()))
+                .willReturn(ReservationChangeResponse.of(reservation));
 
         // 3) 좌석 상태 변경 Mock
         ConcertSeat concertSeat = ConcertSeat.create(1L, 1);
-        ConcertSeatStatusResponse concertSeatStatusResponse = ConcertSeatStatusResponse.of(concertSeat);
-        given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.RESERVED))
-                .willReturn(concertSeatStatusResponse);
+        given(concertCommandService.changeConcertSeatStatus(anyLong(), any()))
+                .willReturn(ConcertSeatStatusResponse.of(concertSeat));
 
         // 4) 결제 생성 Mock
         Payment payment = Payment.create(userId, reservationId, amount);
-        PaymentResponse paymentResponse = PaymentResponse.of(payment);
-        given(paymentCommandService.createPayment(userId, reservationId, amount))
-                .willReturn(paymentResponse);
+        given(paymentCommandService.createPayment(anyLong(), anyLong(), anyLong()))
+                .willReturn(PaymentResponse.of(payment));
 
         // when
         PaymentResponse result = paymentFacade.executePayment(reservationId, amount);
 
         // then
         assertThat(result.paymentId()).isEqualTo(payment.getId());
-        assertThat(result.amount()).isEqualTo(payment.getAmount());
+        assertThat(result.amount()).isEqualTo(amount);
 
+        // 이벤트 발행 검증 -> PaymentCompletedEvent 타입의 객체가 한 번 발행되었는지 확인
+        verify(eventPublisher, times(1)).publishEvent(any(PaymentCompletedEvent.class));
+
+        // 기존 로직 검증
         verify(reservationQueryService).getReservation(reservationId);
-        verify(reservationCommandService).changeReservationStatus(reservationId, ReservationStatus.CONFIRMED);
+        verify(reservationCommandService).changeReservationStatus(eq(reservationId), eq(ReservationStatus.CONFIRMED));
         verify(concertCommandService).changeConcertSeatStatus(concertSeatId, SeatStatus.RESERVED);
-        verify(paymentCommandService).createPayment(userId, reservationId, amount);
+        verify(paymentCommandService).createPayment(eq(userId), eq(reservationId), eq(amount));
     }
 
     @Test
