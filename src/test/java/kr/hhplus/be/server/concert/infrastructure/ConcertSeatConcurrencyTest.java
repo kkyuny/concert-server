@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class ConcertSeatConcurrencyTest {
 

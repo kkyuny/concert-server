@@ -17,36 +17,75 @@ import java.util.Map;
 @TestConfiguration
 public class TestKafkaConfiguration {
 
-    @Primary
-    @Bean(name = "kafkaTemplate")
-    @SuppressWarnings("rawtypes") // 제네릭 타입 불일치 문제를 무시하고 모든 타입 주입을 허용
-    public KafkaTemplate kafkaTemplate() {
-        return new KafkaTemplate<>(testProducerFactory());
-    }
-
     @Bean
-    public ProducerFactory<String, Object> testProducerFactory() {
+    @Primary
+    public ProducerFactory<String, String> producerFactory() {
+
         Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+        config.put(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "127.0.0.1:9092"
+        );
+
+        config.put(
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class
+        );
+
+        config.put(
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class
+        );
+
         return new DefaultKafkaProducerFactory<>(config);
     }
 
+    @Bean
     @Primary
-    @Bean(name = "kafkaListener")
-    public ConcurrentKafkaListenerContainerFactory<String, Object> testKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(testConsumerFactory());
-        return factory;
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, Object> testConsumerFactory() {
+    @Primary
+    public ConsumerFactory<String, String> consumerFactory() {
+
         Map<String, Object> config = new HashMap<>();
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+        config.put(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "127.0.0.1:9092"
+        );
+
+        config.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class
+        );
+
+        config.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class
+        );
+
+        config.put(
+                ConsumerConfig.GROUP_ID_CONFIG,
+                "test-group"
+        );
+
         return new DefaultKafkaConsumerFactory<>(config);
+    }
+
+    @Bean(name = "kafkaListenerContainerFactory")
+    @Primary
+    public ConcurrentKafkaListenerContainerFactory<String, String>
+    kafkaListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(consumerFactory());
+
+        return factory;
     }
 }

@@ -15,11 +15,7 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-        "spring.main.allow-bean-definition-overriding=true", // 이름이 겹쳐도 테스트 빈으로 덮어쓰기 허용
-        "spring.kafka.listener.auto-startup=false"           // 테스트 시 카프카 서버 연결 시도 방지
-})
-@ActiveProfiles("test")
+@SpringBootTest
 @Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class ReservationExpireTest {
 

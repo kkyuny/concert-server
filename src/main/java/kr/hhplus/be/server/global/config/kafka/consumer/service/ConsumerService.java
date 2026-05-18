@@ -24,7 +24,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "member-topic", // producer에서 토픽 설정 후 send
             groupId = "${spring.kafka.consumer.member-topic-log-group-id}", // yml에서 불러오기
-            containerFactory = "kafkaListener" // config 설정 값
+            containerFactory = "kafkaListenerContainerFactory" // config 설정 값
     )
     public void consumer1(String message) {
         System.out.println("member-topic-log-group 메시지 수신 : " + message);
@@ -37,7 +37,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "order-topic",
             groupId = "${spring.kafka.consumer.order-topic-log-group-id}",
-            containerFactory = "kafkaListener"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumer2(String message) {
         System.out.println("order-topic-log-group 메시지 수신 : " + message);
@@ -50,7 +50,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "member-topic",
             groupId = "${spring.kafka.consumer.member-topic-log-group-id}",
-            containerFactory = "kafkaListener"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumer3(String message) {
         System.out.println("member-topic 메시지 수신 : " + message);
@@ -63,7 +63,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "member-topic",
             groupId = "${spring.kafka.consumer.member-topic-log-group-id}",
-            containerFactory = "kafkaListener"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumer4(
             @Header(KafkaHeaders.RECEIVED_KEY) String key,
@@ -80,7 +80,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "member-topic",
             groupId = "${spring.kafka.consumer.member-topic-log-group-id}",
-            containerFactory = "kafkaListener"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumer5(
             @Header(KafkaHeaders.RECEIVED_KEY) String key,
@@ -103,7 +103,7 @@ public class ConsumerService {
     @KafkaListener(
             topics = "member-topic",
             groupId = "${spring.kafka.consumer.member-topic-log-group-id}",
-            containerFactory = "kafkaListener"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumer6(
             @Header(KafkaHeaders.RECEIVED_KEY) String key,

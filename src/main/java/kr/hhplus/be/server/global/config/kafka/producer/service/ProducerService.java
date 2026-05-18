@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ProducerService {
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public ProducerService(KafkaTemplate<String, Object> kafkaTemplate, ObjectMapper objectMapper) {
+    public ProducerService(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
     }
