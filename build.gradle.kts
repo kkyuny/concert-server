@@ -57,6 +57,12 @@ dependencies {
 	// kafka
 	implementation ("org.springframework.kafka:spring-kafka")
 
+	// actuator
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
+
+	// influx
+	implementation("io.micrometer:micrometer-registry-influx")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
