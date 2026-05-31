@@ -40,3 +40,11 @@ management:
   endpoint:
     health:
       show-details: always
+
+  metrics:
+    export:
+      influx:
+        enabled: true
+        uri: http://localhost:8086
+        db: metrics
+        step: 10s
