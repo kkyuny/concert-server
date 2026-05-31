@@ -1,11 +1,15 @@
 package kr.hhplus.be.server.reservation.infrastructure;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
+import kr.hhplus.be.server.TestRedisConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class RedisReservationTokenServiceTest {
 
     @Autowired

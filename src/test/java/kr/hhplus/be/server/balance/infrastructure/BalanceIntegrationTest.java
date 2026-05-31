@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.balance.infrastructure;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.balance.api.dto.BalanceChargeRequest;
 import kr.hhplus.be.server.balance.api.dto.BalanceChargeResponse;
 import kr.hhplus.be.server.balance.application.BalanceCommandService;
@@ -9,12 +11,16 @@ import kr.hhplus.be.server.balance.domain.NotFoundBalanceException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 @Transactional
 class BalanceIntegrationTest {
 

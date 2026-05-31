@@ -1,0 +1,9 @@
+### Kafka 메시지 생성 (key 포함)
+POST http://localhost:8080/producer/message/create/key/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "test-user",
+  "email": "test@example.com"
+}

@@ -5,11 +5,13 @@ import kr.hhplus.be.server.concert.application.ConcertQueryService;
 import kr.hhplus.be.server.concert.domain.SeatStatus;
 import kr.hhplus.be.server.payment.api.dto.PaymentResponse;
 import kr.hhplus.be.server.payment.application.PaymentCommandService;
+import kr.hhplus.be.server.payment.event.PaymentCompletedEvent;
 import kr.hhplus.be.server.reservation.api.dto.ReservationInfoResponse;
 import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
 import kr.hhplus.be.server.reservation.appication.ReservationQueryService;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class PaymentFacade {
     private final ReservationCommandService reservationCommandService;
     private final ReservationQueryService reservationQueryService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final Duration DAILY_TTL = Duration.ofDays(1);   // 하루 + 여유 1일
     private static final Duration WEEKLY_TTL = Duration.ofDays(7);
@@ -80,6 +83,16 @@ public class PaymentFacade {
 
         redisTemplate.opsForZSet().incrementScore(weeklyKey, reservationInfoResponse.concertId(), 1);
         redisTemplate.expire(weeklyKey, weeklyTtl);
+
+        // 결제성공 이벤트 생성
+        eventPublisher.publishEvent(
+                new PaymentCompletedEvent(
+                        reservationId,
+                        reservationInfoResponse.userId(),
+                        reservationInfoResponse.concertId(),
+                        amount
+                )
+        );
 
         return paymentCommandService.createPayment(reservationInfoResponse.userId(), reservationId, amount);
     }

@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3309/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    username: application
+    password: application
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      maximum-pool-size: 3
+      connection-timeout: 10000
+      max-lifetime: 60000
+
+  jpa:
+    open-in-view: false
+    generate-ddl: false
+    show-sql: true
+
+    hibernate:
+      ddl-auto: update
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      order-topic-log-group-id: local-order-group
+      member-topic-log-group-id: local-member-group
+      auto-offset-reset: earliest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always

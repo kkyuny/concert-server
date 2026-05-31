@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.concert.infrastructure;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
 import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.application.ConcertQueryService;
 import kr.hhplus.be.server.concert.domain.Concert;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -18,7 +20,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Import(TestRedisConfiguration.class) // 테스트용 RedisCacheManager 적용
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class ConcertQueryCacheIntegrationTest {
 
     @Autowired

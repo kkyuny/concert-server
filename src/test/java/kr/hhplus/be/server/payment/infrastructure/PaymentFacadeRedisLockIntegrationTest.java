@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.payment.infrastructure;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.domain.Concert;
 import kr.hhplus.be.server.concert.domain.ConcertDetail;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
@@ -17,7 +19,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +32,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class PaymentFacadeRedisLockIntegrationTest {
 
     @Autowired

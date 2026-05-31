@@ -1,10 +1,14 @@
 package kr.hhplus.be.server.concert.infrastructure;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.domain.Concert;
 import kr.hhplus.be.server.concert.domain.ConcertDetail;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -13,6 +17,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 @Transactional
 class ConcertDetailIntegrationTest {
 

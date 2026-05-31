@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.reservation.infrastructure.dataplatform;
 
+import kr.hhplus.be.server.TestKafkaConfiguration;
+import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
 import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
 import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
@@ -8,12 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
+@Import({TestRedisConfiguration.class, TestKafkaConfiguration.class})
 class ReservationEventTest {
 
     @Autowired
