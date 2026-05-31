@@ -1,7 +1,9 @@
 package kr.hhplus.be.server.global.advice;
 
 import kr.hhplus.be.server.balance.domain.NotFoundBalanceException;
+import kr.hhplus.be.server.concert.domain.NotFoundConcertDetailException;
 import kr.hhplus.be.server.concert.domain.NotFoundConcertException;
+import kr.hhplus.be.server.concert.domain.NotFoundConcertSeatException;
 import kr.hhplus.be.server.reservation.domain.CannotChangeReservationStatusException;
 import kr.hhplus.be.server.reservation.domain.NotFoundReservationException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,16 @@ public class ApiControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NotFoundConcertException.class)
     public ProblemDetail notFoundConcertExceptionHandler(NotFoundConcertException exception){
+        return getProblemDetail(HttpStatus.NOT_FOUND, exception);
+    }
+
+    @ExceptionHandler(NotFoundConcertDetailException.class)
+    public ProblemDetail notFoundConcertDetailExceptionHandler(NotFoundConcertException exception){
+        return getProblemDetail(HttpStatus.NOT_FOUND, exception);
+    }
+
+    @ExceptionHandler(NotFoundConcertSeatException.class)
+    public ProblemDetail notFoundConcertSeatExceptionHandler(NotFoundConcertException exception){
         return getProblemDetail(HttpStatus.NOT_FOUND, exception);
     }
 

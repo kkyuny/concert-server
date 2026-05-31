@@ -13,19 +13,19 @@ public class Reservation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long concertId;
+    private Long concertDetailId;
     private Long concertSeatId;
     private Long userId;
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
     private LocalDateTime expiredAt;
 
-    public static Reservation create(Long userId, Long concertSeatId, Long concertId) {
+    public static Reservation create(Long userId, Long concertSeatId, Long concertDetailId) {
         Reservation reservation = new Reservation();
 
         reservation.userId = userId;
         reservation.concertSeatId = concertSeatId;
-        reservation.concertId = concertId;
+        reservation.concertDetailId = concertDetailId;
         reservation.status = ReservationStatus.PENDING;
         reservation.expiredAt = LocalDateTime.now().plusMinutes(5);
 

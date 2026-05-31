@@ -17,7 +17,6 @@ import kr.hhplus.be.server.reservation.api.dto.ReservationResponse;
 import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
 import kr.hhplus.be.server.reservation.appication.ReservationQueryService;
 import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
-import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import kr.hhplus.be.server.reservation.facade.ReservationFacade;
 import kr.hhplus.be.server.reservation.infrastructure.ReservationRepository;
@@ -33,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -94,7 +94,7 @@ class PaymentIntegrationTest {
         String token =
                 reservationTokenService.issueToken(userId, seat.getId());
 
-        ReservationResponse reservationResponse = reservationFacade.initReservation(seat.getId(), userId, token, concert.getId());
+        ReservationResponse reservationResponse = reservationFacade.initReservation(seat.getId(), userId, token);
 
         // when
         PaymentResponse response = paymentFacade.executePayment(reservationResponse.reservationId(), 500L);
@@ -116,53 +116,180 @@ class PaymentIntegrationTest {
 
     @Test
     void executePayment_ranking_집계_정상동작() {
+
         // given
-        Concert concert1 = concertRepository.save(Concert.create("콘서트1", ""));
-        Concert concert2 = concertRepository.save(Concert.create("콘서트2", ""));
+        Concert concert1 =
+                concertRepository.save(
+                        Concert.create("콘서트1", "")
+                );
 
-        ConcertDetail detail1 = concertDetailRepository.save(
-                ConcertDetail.create(concert1, LocalDate.now(), 500)
-        );
-        ConcertDetail detail2 = concertDetailRepository.save(
-                ConcertDetail.create(concert2, LocalDate.now(), 500)
-        );
+        Concert concert2 =
+                concertRepository.save(
+                        Concert.create("콘서트2", "")
+                );
 
-        ConcertSeat seat1 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 1));
-        ConcertSeat seat2 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 2));
-        ConcertSeat seat3 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 3));
-        ConcertSeat seat4 = concertSeatRepository.save(ConcertSeat.create(detail1.getId(), 4));
+        ConcertDetail detail1 =
+                concertDetailRepository.save(
+                        ConcertDetail.create(
+                                concert1,
+                                LocalDate.now(),
+                                500
+                        )
+                );
 
-        ConcertSeat seat5 = concertSeatRepository.save(ConcertSeat.create(detail2.getId(), 1));
-        ConcertSeat seat6 = concertSeatRepository.save(ConcertSeat.create(detail2.getId(), 2));
+        ConcertDetail detail2 =
+                concertDetailRepository.save(
+                        ConcertDetail.create(
+                                concert2,
+                                LocalDate.now(),
+                                500
+                        )
+                );
+
+        ConcertSeat seat1 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail1.getId(), 1)
+                );
+
+        ConcertSeat seat2 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail1.getId(), 2)
+                );
+
+        ConcertSeat seat3 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail1.getId(), 3)
+                );
+
+        ConcertSeat seat4 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail1.getId(), 4)
+                );
+
+        ConcertSeat seat5 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail2.getId(), 1)
+                );
+
+        ConcertSeat seat6 =
+                concertSeatRepository.save(
+                        ConcertSeat.create(detail2.getId(), 2)
+                );
 
         Long userId = 100L;
 
-        // concert1 → 4번 결제
-        for (ConcertSeat seat : List.of(seat1, seat2, seat3, seat4)) {
-            String token = reservationTokenService.issueToken(userId, seat.getId());
-            ReservationResponse res = reservationFacade.initReservation(seat.getId(), userId, token, concert1.getId());
-            paymentFacade.executePayment(res.reservationId(), 500L);
+        // concert1 → 4회 결제
+        for (ConcertSeat seat : List.of(
+                seat1,
+                seat2,
+                seat3,
+                seat4
+        )) {
+
+            String token =
+                    reservationTokenService.issueToken(
+                            userId,
+                            seat.getId()
+                    );
+
+            ReservationResponse reservation =
+                    reservationFacade.initReservation(
+                            seat.getId(),
+                            userId,
+                            token
+                    );
+
+            paymentFacade.executePayment(
+                    reservation.reservationId(),
+                    500L
+            );
         }
 
-        // concert2 → 2번 결제
-        for (ConcertSeat seat : List.of(seat5, seat6)) {
-            String token = reservationTokenService.issueToken(userId, seat.getId());
-            ReservationResponse res = reservationFacade.initReservation(seat.getId(), userId, token, concert2.getId());
-            paymentFacade.executePayment(res.reservationId(), 500L);
+        // concert2 → 2회 결제
+        for (ConcertSeat seat : List.of(
+                seat5,
+                seat6
+        )) {
+
+            String token =
+                    reservationTokenService.issueToken(
+                            userId,
+                            seat.getId()
+                    );
+
+            ReservationResponse reservation =
+                    reservationFacade.initReservation(
+                            seat.getId(),
+                            userId,
+                            token
+                    );
+
+            paymentFacade.executePayment(
+                    reservation.reservationId(),
+                    500L
+            );
         }
 
         // when
-        String dailyKey = "concert:ranking:daily:" + LocalDate.now();
+        String dailyKey =
+                "concert:ranking:daily:" + LocalDate.now();
 
-        Double score1 = stringRedisTemplate.opsForZSet()
-                .score(dailyKey, concert1.getId().toString());
+        System.out.println("===== REDIS DEBUG =====");
+        System.out.println("all keys = "
+                + stringRedisTemplate.keys("*"));
 
-        Double score2 = stringRedisTemplate.opsForZSet()
-                .score(dailyKey, concert2.getId().toString());
+        System.out.println("dailyKey = "
+                + dailyKey);
+
+        Set<String> members =
+                stringRedisTemplate.opsForZSet()
+                        .range(dailyKey, 0, -1);
+
+        System.out.println("members = "
+                + members);
+
+        Double score1 =
+                stringRedisTemplate.opsForZSet()
+                        .score(
+                                dailyKey,
+                                concert1.getId().toString()
+                        );
+
+        Double score2 =
+                stringRedisTemplate.opsForZSet()
+                        .score(
+                                dailyKey,
+                                concert2.getId().toString()
+                        );
+
+        System.out.println("concert1 id = "
+                + concert1.getId());
+
+        System.out.println("concert2 id = "
+                + concert2.getId());
+
+        System.out.println("score1 = "
+                + score1);
+
+        System.out.println("score2 = "
+                + score2);
+
+        System.out.println("=======================");
 
         // then
-        assertThat(score1).isEqualTo(4.0);
-        assertThat(score2).isEqualTo(2.0);
+        assertThat(score1)
+                .as("concert1 score")
+                .isNotNull();
+
+        assertThat(score2)
+                .as("concert2 score")
+                .isNotNull();
+
+        assertThat(score1)
+                .isEqualTo(4.0);
+
+        assertThat(score2)
+                .isEqualTo(2.0);
     }
 
     /* status 변경 로직에 의해(상태 강제 변경 불가) 테스트 제외

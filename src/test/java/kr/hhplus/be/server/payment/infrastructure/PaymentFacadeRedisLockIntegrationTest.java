@@ -28,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -74,7 +73,7 @@ class PaymentFacadeRedisLockIntegrationTest {
         );
         ConcertSeat seat = concertSeatRepository.save(ConcertSeat.create(detail.getId(), 1));
 
-        Long reservationId = reservationCommandService.createPendingReservation(100L, seat.getId(), concert.getId()).reservationId();
+        Long reservationId = reservationCommandService.createPendingReservation(100L, seat.getId()).reservationId();
 
         int totalUsers = 10;
         CountDownLatch latch = new CountDownLatch(totalUsers);

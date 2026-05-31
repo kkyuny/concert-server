@@ -5,109 +5,71 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
 @Repository
+@RequiredArgsConstructor
 public class RedisQueueRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    // ----------------------------
-    // 슬롯 (세마포어)
-    // ----------------------------
+    public boolean addUser(String userId) {
 
-    public boolean tryAcquireSlot(String slotKey, int maxConcurrent, long ttlSeconds) {
-        Long current = redisTemplate.opsForValue().increment(slotKey);
-        if (current == null) return false;
+        Long added =
+                redisTemplate.opsForSet()
+                        .add("reservation:users", userId);
 
-        // 🔥 초과 시 롤백
-        if (current > maxConcurrent) {
-            redisTemplate.opsForValue().decrement(slotKey);
-            return false;
+        if (added != null && added > 0) {
+            redisTemplate.opsForList()
+                    .rightPush("reservation:queue", userId);
+
+            return true;
         }
 
-        // 🔥 TTL은 최초 생성 시에만 설정 (덮어쓰기 방지)
-        Long ttl = redisTemplate.getExpire(slotKey, TimeUnit.SECONDS);
-        if (ttl == null || ttl == -1) {
-            redisTemplate.expire(slotKey, ttlSeconds, TimeUnit.SECONDS);
-        }
-
-        return true;
+        return false;
     }
 
-    public void releaseSlot(String slotKey) {
-        Long current = redisTemplate.opsForValue().decrement(slotKey);
+    public Long queueSize() {
 
-        // 🔥 음수 방지
-        if (current != null && current < 0) {
-            redisTemplate.opsForValue().set(slotKey, "0");
-        }
+        Long size =
+                redisTemplate.opsForList()
+                        .size("reservation:queue");
+
+        return size == null ? 0 : size;
     }
 
-    public Long getSlotTTL(String slotKey) {
-        return redisTemplate.getExpire(slotKey, TimeUnit.SECONDS);
+    public int activeCount() {
+
+        String value =
+                redisTemplate.opsForValue()
+                        .get("reservation:active");
+
+        return value == null
+                ? 0
+                : Integer.parseInt(value);
     }
 
-    // ----------------------------
-    // 큐 (FIFO)
-    // ----------------------------
-
-    /**
-     * 중복 방지 enqueue
-     */
-    public void enqueueIfAbsent(String queueKey, String userId) {
-        String setKey = queueKey + ":set";
-
-        Long added = redisTemplate.opsForSet().add(setKey, userId);
-
-        if (added != null && added == 1) {
-            redisTemplate.opsForList().rightPush(queueKey, userId);
-        }
+    public void incrementActive() {
+        redisTemplate.opsForValue()
+                .increment("reservation:active");
     }
 
-    /**
-     * 큐 맨 앞 조회 (디버깅용 / 일부 로직용)
-     */
-    public String peek(String queueKey) {
-        return redisTemplate.opsForList().index(queueKey, 0);
+    public void decrementActive() {
+        redisTemplate.opsForValue()
+                .decrement("reservation:active");
     }
 
-    /**
-     * 큐에서 제거 (앞에서 pop)
-     */
-    public void dequeue(String queueKey) {
-        String userId = redisTemplate.opsForList().leftPop(queueKey);
+    public void removeUser(String userId) {
 
-        if (userId != null) {
-            redisTemplate.opsForSet().remove(queueKey + ":set", userId);
-        }
+        redisTemplate.opsForList()
+                .remove("reservation:queue", 1, userId);
+
+        redisTemplate.opsForSet()
+                .remove("reservation:users", userId);
     }
 
-    /**
-     * 특정 유저 제거 (timeout / 성공 시 사용)
-     */
-    public void removeFromQueue(String queueKey, String userId) {
-        Long removed = redisTemplate.opsForList().remove(queueKey, 0, userId);
+    public List<String> queue() {
 
-        // 🔥 실제로 제거된 경우만 SET에서도 제거
-        if (removed != null && removed > 0) {
-            redisTemplate.opsForSet().remove(queueKey + ":set", userId);
-        }
-    }
-
-    /**
-     * 전체 큐 조회 (테스트/디버깅용)
-     */
-    public List<String> getQueue(String queueKey) {
-        return redisTemplate.opsForList().range(queueKey, 0, -1);
-    }
-
-    /**
-     * 현재 슬롯 사용량 조회 (테스트용)
-     */
-    public Long getCurrentSlotCount(String slotKey) {
-        String value = redisTemplate.opsForValue().get(slotKey);
-        return value == null ? 0L : Long.valueOf(value);
+        return redisTemplate.opsForList()
+                .range("reservation:queue", 0, -1);
     }
 }

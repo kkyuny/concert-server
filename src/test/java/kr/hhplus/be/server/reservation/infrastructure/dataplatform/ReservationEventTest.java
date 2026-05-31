@@ -54,11 +54,10 @@ class ReservationEventTest {
         reservationFacade.initReservation(
                 seatId,
                 1L,
-                "token",
-                100L
+                "token"
         );
 
         verify(dataPlatformClient, times(1))
-                .send(anyLong(), anyLong(), anyLong(), anyLong());
+                .send(anyLong(), anyLong(), anyLong());
     }
 }
