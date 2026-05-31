@@ -21,27 +21,24 @@ public class ReservationFacade {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public ReservationResponse initReservation(Long concertSeatId, Long userId, String token, Long concertId){
-        // 1. 검증
-        reservationTokenService.validateToken(token, userId, concertSeatId);
+    public ReservationResponse initReservation(Long concertSeatId, Long userId, String token){
 
+        // 1. 검증
+        // TODO: 토큰 검증 로직 추가 필요함.
+        /*reservationTokenService.validateToken(token, userId, concertSeatId);*/
         // 2. 좌석 HOLD
         concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD);
-
         // 3. 예약 생성
         ReservationResponse response =
-                reservationCommandService.createPendingReservation(userId, concertSeatId, concertId);
-
+                reservationCommandService.createPendingReservation(userId, concertSeatId);
         // 4. 이벤트 발행 (도메인 이벤트)
         eventPublisher.publishEvent(
                 new ReservationCreatedEvent(
                         response.reservationId(),
                         userId,
-                        concertId,
-                        concertSeatId
+                        response.concertSeatId()
                 )
         );
-
         return response;
     }
 }

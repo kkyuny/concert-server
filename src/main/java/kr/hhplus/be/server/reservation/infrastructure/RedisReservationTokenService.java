@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -48,12 +49,16 @@ public class RedisReservationTokenService implements ReservationTokenService {
             throw new IllegalStateException("토큰 만료");
         }
 
-        String[] split = value.split(":");
+        String[] split = value.split("-");
+
+        System.out.println(Arrays.toString(split));
 
         if (!split[0].equals(String.valueOf(userId))
                 || !split[1].equals(String.valueOf(seatId))) {
             throw new IllegalStateException("잘못된 토큰");
         }
+
+        System.out.println(11111);
     }
 
     @Override

@@ -11,15 +11,13 @@ public record ReservationInfoResponse(
         Long userId,
         Long concertSeatId,
         ReservationStatus seatStatus,
-        LocalDateTime expiredAt,
-        Long concertId
+        LocalDateTime expiredAt
 ) {
     public static ReservationInfoResponse of(Reservation reservation) {
         return new ReservationInfoResponse(reservation.getId(),
                 reservation.getUserId(),
                 reservation.getConcertSeatId(),
                 reservation.getStatus(),
-                reservation.getExpiredAt(),
-                reservation.getConcertId());
+                reservation.getExpiredAt());
     }
 }

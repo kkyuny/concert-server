@@ -20,8 +20,7 @@ public class ReservationEventListener {
             dataPlatformClient.send(
                     event.reservationId(),
                     event.userId(),
-                    event.concertId(),
-                    event.seatId()
+                    event.concertSeatId()
             );
         } catch (Exception e) {
             log.error("DataPlatform 전송 실패", e);

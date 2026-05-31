@@ -1,5 +1,7 @@
 package kr.hhplus.be.server.reservation.appication;
 
+import kr.hhplus.be.server.concert.domain.ConcertSeat;
+import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
 import kr.hhplus.be.server.reservation.api.dto.ReservationChangeResponse;
 import kr.hhplus.be.server.reservation.api.dto.ReservationResponse;
 import kr.hhplus.be.server.reservation.domain.CannotChangeReservationStatusException;
@@ -17,14 +19,17 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationCommandServiceTest {
     @Mock
     private ReservationRepository reservationRepository;
+
+    @Mock
+    private ConcertSeatRepository concertSeatRepository;
     
     @InjectMocks
     private ReservationCommandService reservationCommandService;
@@ -33,12 +38,16 @@ class ReservationCommandServiceTest {
     void createPendingReservationTest() {
         Long userId = 1L;
         Long concertSeatId = 1L;
+        Long concertDetailId = 1L;
+        int seatNo = 1;
 
-        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
-
+        Reservation reservation = Reservation.create(userId, concertSeatId, concertDetailId);
         given(reservationRepository.save(any(Reservation.class))).willReturn(reservation);
 
-        ReservationResponse reservationResponse = reservationCommandService.createPendingReservation(userId, concertSeatId, 1L);
+        ConcertSeat concertSeat = ConcertSeat.create(concertDetailId, seatNo);
+        given(concertSeatRepository.findById(anyLong())).willReturn(Optional.of(concertSeat));
+
+        ReservationResponse reservationResponse = reservationCommandService.createPendingReservation(userId, concertSeatId);
 
         assertThat(reservationResponse.reservationId()).isEqualTo(reservation.getId());
     }

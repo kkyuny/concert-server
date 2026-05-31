@@ -2,7 +2,11 @@ package kr.hhplus.be.server.payment.infrastructure;
 
 import kr.hhplus.be.server.TestKafkaConfiguration;
 import kr.hhplus.be.server.TestRedisConfiguration;
+import kr.hhplus.be.server.concert.domain.Concert;
+import kr.hhplus.be.server.concert.domain.ConcertDetail;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
+import kr.hhplus.be.server.concert.infrastructure.ConcertDetailRepository;
+import kr.hhplus.be.server.concert.infrastructure.ConcertRepository;
 import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
 import kr.hhplus.be.server.payment.facade.PaymentFacade;
 import kr.hhplus.be.server.reservation.domain.Reservation;
@@ -14,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,18 +38,39 @@ class PaymentConcurrencyTest {
     private ReservationRepository reservationRepository;
 
     @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
+    private ConcertDetailRepository concertDetailRepository;
+
+    @Autowired
     private ConcertSeatRepository concertSeatRepository;
 
     @Test
     void 같은_예약에_동시_결제시_하나만_성공() throws InterruptedException {
-
         // given
+        Concert concert = concertRepository.save(
+                Concert.create("아이유 콘서트", "짱")
+        );
+
+        ConcertDetail concertDetail = concertDetailRepository.save(
+                ConcertDetail.create(
+                        concert,
+                        LocalDate.now(),
+                        1000
+                )
+        );
+
         ConcertSeat seat = concertSeatRepository.save(
-                ConcertSeat.create(1L, 1)
+                ConcertSeat.create(concertDetail.getId(), 1)
         );
 
         Reservation reservation = reservationRepository.save(
-                Reservation.create(1L, seat.getId(), 1L)
+                Reservation.create(
+                        1L,
+                        seat.getId(),
+                        concertDetail.getId()
+                )
         );
 
         int threadCount = 10;

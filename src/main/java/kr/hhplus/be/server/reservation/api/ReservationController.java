@@ -11,24 +11,34 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
+
     private final ReservationFacade reservationFacade;
     private final QueueService queueService;
 
     @PostMapping
-    public ReservationResponse reserveConcert(@RequestBody ReservationRequest request) {
-        boolean permit = queueService.waitForPermit(request.userId().toString(), 3);
-        if (!permit) throw new RuntimeException("대기시간 초과");
+    public ReservationResponse reserve(
+            @RequestBody ReservationRequest request
+    ) {
+        boolean acquired =
+                queueService.tryAcquire(
+                        request.userId()
+                );
+
+        if (!acquired) {
+            throw new IllegalStateException(
+                    "대기 순서가 아닙니다."
+            );
+        }
 
         try {
-            // 슬롯 확보되면 Facade 호출 → 실제 예약 처리
+
             return reservationFacade.initReservation(
                     request.concertSeatId(),
                     request.userId(),
-                    request.token(),
-                    request.concertId()
+                    request.token()
             );
         } finally {
-            queueService.releaseSlot(); // 슬롯 반환
+            queueService.release();
         }
     }
 }

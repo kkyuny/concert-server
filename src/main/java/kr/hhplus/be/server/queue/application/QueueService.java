@@ -1,83 +1,65 @@
 package kr.hhplus.be.server.queue.application;
 
+import kr.hhplus.be.server.queue.domain.QueueStatus;
 import kr.hhplus.be.server.queue.infrastructure.RedisQueueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class QueueService {
 
-    private static final int MAX_CONCURRENT = 5;
-    private static final long SLOT_TTL = 30; // 초
-    private static final String SLOT_KEY = "api:reservation:slot";
-    private static final String QUEUE_KEY = "api:reservation:queue";
+    private static final int MAX_ACTIVE = 5;
 
-    private final RedisQueueRepository redisQueueRepository;
+    private final RedisQueueRepository repository;
 
-    public boolean waitForPermit(String userId, long maxWaitSeconds) {
-        redisQueueRepository.enqueueIfAbsent(QUEUE_KEY, userId);
+    public void enterQueue(Long userId) {
 
-        Instant start = Instant.now();
+        repository.addUser(userId.toString());
+    }
 
-        while (Duration.between(start, Instant.now()).getSeconds() < maxWaitSeconds) {
+    public QueueStatus getStatus(Long userId) {
 
-            List<String> queue = redisQueueRepository.getQueue(QUEUE_KEY);
-            if (queue == null || queue.isEmpty()) {
-                sleep(50);
-                continue;
-            }
+        List<String> queue =
+                repository.queue();
 
-            int myIndex = queue.indexOf(userId);
-
-            // 🔥 핵심: 앞에서 MAX_CONCURRENT명만 허용
-            if (myIndex == -1 || myIndex >= MAX_CONCURRENT) {
-                sleep(100);
-                continue;
-            }
-
-            boolean acquired = redisQueueRepository.tryAcquireSlot(
-                    SLOT_KEY, MAX_CONCURRENT, SLOT_TTL
-            );
-
-            if (acquired) {
-                redisQueueRepository.removeFromQueue(QUEUE_KEY, userId);
-                return true;
-            }
-
-            sleep(100);
+        if (queue == null) {
+            return QueueStatus.WAITING;
         }
 
-        // timeout 시 제거
-        redisQueueRepository.removeFromQueue(QUEUE_KEY, userId);
-        return false;
+        int index =
+                queue.indexOf(userId.toString());
+
+        if (index == -1) {
+            return QueueStatus.WAITING;
+        }
+
+        return index < MAX_ACTIVE
+                ? QueueStatus.READY
+                : QueueStatus.WAITING;
     }
 
-    public void releaseSlot() {
-        redisQueueRepository.releaseSlot(SLOT_KEY);
+    public boolean tryAcquire(Long userId) {
+        if (getStatus(userId)
+                != QueueStatus.READY) {
+            return false;
+        }
+
+        if (repository.activeCount() >= MAX_ACTIVE) {
+            return false;
+        }
+
+        repository.incrementActive();
+
+        repository.removeUser(userId.toString());
+
+        return true;
     }
 
-    public int getQueuePosition(String userId) {
-        var list = redisQueueRepository.getQueue(QUEUE_KEY);
-        if (list == null) return -1;
-        return list.indexOf(userId);
-    }
+    public void release() {
 
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ignored) {}
-    }
-
-    public List<String> getQueue(String key) {
-        return redisQueueRepository.getQueue(key);
-    }
-
-    public void enqueueIfAbsent(String key, String userId) {
-        redisQueueRepository.enqueueIfAbsent(key, userId);
+        repository.decrementActive();
     }
 }

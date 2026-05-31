@@ -13,6 +13,7 @@ import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public class PaymentFacade {
     private final ConcertQueryService concertQueryService;
     private final ReservationCommandService reservationCommandService;
     private final ReservationQueryService reservationQueryService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final ApplicationEventPublisher eventPublisher;
 
     private static final Duration DAILY_TTL = Duration.ofDays(1);   // 하루 + 여유 1일
@@ -61,8 +62,20 @@ public class PaymentFacade {
 
         String dailyKey = "concert:ranking:daily:" + now.toLocalDate();
 
-        redisTemplate.opsForZSet().incrementScore(dailyKey, reservationInfoResponse.concertId(), 1);
-        redisTemplate.expire(dailyKey, dailyTtl);
+        Long concertDetailId = concertQueryService.getConcertSeat(reservationInfoResponse.concertSeatId()).concertDetailId();
+        Long concertId = concertQueryService.getConcertDetail(concertDetailId).concertId();
+
+        stringRedisTemplate.opsForZSet()
+                .incrementScore(
+                        dailyKey,
+                        concertId.toString(),
+                        1
+                );
+
+        stringRedisTemplate.expire(
+                dailyKey,
+                dailyTtl
+        );
 
         /** ================== WEEKLY ================== **/
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
@@ -81,15 +94,24 @@ public class PaymentFacade {
 
         String weeklyKey = "concert:ranking:weekly:" + year + "-W" + weekOfYear;
 
-        redisTemplate.opsForZSet().incrementScore(weeklyKey, reservationInfoResponse.concertId(), 1);
-        redisTemplate.expire(weeklyKey, weeklyTtl);
+        stringRedisTemplate.opsForZSet()
+                .incrementScore(
+                        weeklyKey,
+                        concertId.toString(),
+                        1
+                );
+
+        stringRedisTemplate.expire(
+                weeklyKey,
+                weeklyTtl
+        );
 
         // 결제성공 이벤트 생성
         eventPublisher.publishEvent(
                 new PaymentCompletedEvent(
                         reservationId,
                         reservationInfoResponse.userId(),
-                        reservationInfoResponse.concertId(),
+                        concertId,
                         amount
                 )
         );

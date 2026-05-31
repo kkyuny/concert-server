@@ -6,6 +6,7 @@ import kr.hhplus.be.server.concert.api.dto.response.ConcertInfoResponse;
 import kr.hhplus.be.server.concert.api.dto.response.ConcertSeatInfoResponse;
 import kr.hhplus.be.server.concert.domain.ConcertDetail;
 import kr.hhplus.be.server.concert.domain.NotFoundConcertException;
+import kr.hhplus.be.server.concert.domain.NotFoundConcertSeatException;
 import kr.hhplus.be.server.concert.domain.SeatStatus;
 import kr.hhplus.be.server.concert.infrastructure.ConcertDetailRepository;
 import kr.hhplus.be.server.concert.infrastructure.ConcertRepository;
@@ -25,6 +26,18 @@ public class ConcertQueryService {
     private final ConcertRepository concertRepository;
     private final ConcertDetailRepository concertDetailRepository;
     private final ConcertSeatRepository concertSeatRepository;
+
+    public ConcertSeatInfoResponse getConcertSeat(Long concertSeatId) {
+        return concertSeatRepository.findById(concertSeatId)
+                .map(ConcertSeatInfoResponse::from)
+                .orElseThrow(()->new NotFoundConcertSeatException(concertSeatId));
+    }
+
+    public ConcertDetailInfoResponse getConcertDetail(Long concertDetailId) {
+        return concertDetailRepository.findById(concertDetailId)
+                .map(ConcertDetailInfoResponse::from)
+                .orElseThrow(()->new NotFoundConcertException(concertDetailId));
+    }
 
     // 모든 콘서트
     @Cacheable(cacheNames = "concerts", key = "'allConcerts'")
