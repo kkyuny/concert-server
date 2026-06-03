@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.reservation.infrastructure;
 
-import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
+import kr.hhplus.be.server.reservation.application.ReservationTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;

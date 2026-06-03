@@ -4,9 +4,10 @@ import kr.hhplus.be.server.concert.api.dto.ConcertSeatStatusResponse;
 import kr.hhplus.be.server.concert.application.ConcertCommandService;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
 import kr.hhplus.be.server.concert.domain.SeatStatus;
+import kr.hhplus.be.server.queue.application.QueueService;
 import kr.hhplus.be.server.reservation.api.dto.ReservationResponse;
-import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
-import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
+import kr.hhplus.be.server.reservation.application.ReservationCommandService;
+import kr.hhplus.be.server.reservation.application.ReservationTokenService;
 import kr.hhplus.be.server.reservation.domain.Reservation;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import kr.hhplus.be.server.reservation.event.ReservationCreatedEvent;
@@ -32,6 +33,9 @@ class ReservationFacadeTest {
 
     @Mock
     private ReservationTokenService reservationTokenService;
+
+    @Mock
+    private QueueService queueService;
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
@@ -74,5 +78,33 @@ class ReservationFacadeTest {
 
         verify(eventPublisher, times(1))
                 .publishEvent(any(ReservationCreatedEvent.class));
+    }
+
+    @Test
+    void reserveTest() {
+        Long userId = 1L;
+        Long concertSeatId = 1L;
+        String token = "test-token";
+
+        given(queueService.tryAcquire(userId))
+                .willReturn(true);
+
+        Reservation reservation = Reservation.create(userId, concertSeatId, 1L);
+        given(reservationCommandService.createPendingReservation(userId, concertSeatId))
+                .willReturn(ReservationResponse.of(reservation));
+
+        ConcertSeat concertSeat = ConcertSeat.create(1L, 1);
+        given(concertCommandService.changeConcertSeatStatus(concertSeatId, SeatStatus.HOLD))
+                .willReturn(ConcertSeatStatusResponse.of(concertSeat));
+
+        ReservationResponse response = reservationFacade.reserve(userId, concertSeatId, token);
+
+        assertThat(response.seatStatus()).isEqualTo(ReservationStatus.PENDING);
+
+        verify(queueService, times(1))
+                .tryAcquire(userId);
+
+        verify(queueService, times(1))
+                .release();
     }
 }

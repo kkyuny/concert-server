@@ -10,7 +10,7 @@ import kr.hhplus.be.server.concert.infrastructure.ConcertDetailRepository;
 import kr.hhplus.be.server.concert.infrastructure.ConcertRepository;
 import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
 import kr.hhplus.be.server.reservation.api.dto.ReservationResponse;
-import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
+import kr.hhplus.be.server.reservation.application.ReservationTokenService;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import kr.hhplus.be.server.reservation.facade.ReservationFacade;
 import org.junit.jupiter.api.AfterEach;

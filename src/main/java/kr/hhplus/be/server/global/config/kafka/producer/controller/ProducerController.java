@@ -2,8 +2,10 @@ package kr.hhplus.be.server.global.config.kafka.producer.controller;
 
 import kr.hhplus.be.server.global.config.kafka.producer.dto.MemberDto;
 import kr.hhplus.be.server.global.config.kafka.producer.service.ProducerService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
+@Profile("kafka-practice")
 @RestController
 @RequestMapping("/producer")
 public class ProducerController {
