@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.reservation.appication;
+package kr.hhplus.be.server.reservation.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

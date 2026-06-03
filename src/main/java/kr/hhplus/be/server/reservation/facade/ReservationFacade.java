@@ -2,9 +2,10 @@ package kr.hhplus.be.server.reservation.facade;
 
 import kr.hhplus.be.server.concert.application.ConcertCommandService;
 import kr.hhplus.be.server.concert.domain.SeatStatus;
+import kr.hhplus.be.server.queue.application.QueueService;
 import kr.hhplus.be.server.reservation.api.dto.ReservationResponse;
-import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
-import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
+import kr.hhplus.be.server.reservation.application.ReservationCommandService;
+import kr.hhplus.be.server.reservation.application.ReservationTokenService;
 import kr.hhplus.be.server.reservation.event.ReservationCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,7 +19,22 @@ public class ReservationFacade {
     private final ReservationCommandService reservationCommandService;
     private final ConcertCommandService concertCommandService;
     private final ReservationTokenService reservationTokenService;
+    private final QueueService queueService;
     private final ApplicationEventPublisher eventPublisher;
+
+    public ReservationResponse reserve(Long userId, Long concertSeatId, String token) {
+        boolean acquired = queueService.tryAcquire(userId);
+
+        if (!acquired) {
+            throw new IllegalStateException("대기 순서가 아닙니다.");
+        }
+
+        try {
+            return initReservation(concertSeatId, userId, token);
+        } finally {
+            queueService.release();
+        }
+    }
 
     @Transactional
     public ReservationResponse initReservation(Long concertSeatId, Long userId, String token){

@@ -2,10 +2,12 @@ package kr.hhplus.be.server.global.config.kafka.producer.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.hhplus.be.server.global.config.kafka.producer.dto.MemberDto;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Profile("kafka-practice")
 @Service
 @Transactional
 public class ProducerService {

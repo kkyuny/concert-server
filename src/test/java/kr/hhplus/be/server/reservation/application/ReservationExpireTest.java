@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.reservation.appication;
+package kr.hhplus.be.server.reservation.application;
 
 import kr.hhplus.be.server.TestKafkaConfiguration;
 import kr.hhplus.be.server.TestRedisConfiguration;

@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.reservation.appication;
+package kr.hhplus.be.server.reservation.application;
 
 public interface ReservationTokenService {
     String issueToken(Long userId, Long seatId);

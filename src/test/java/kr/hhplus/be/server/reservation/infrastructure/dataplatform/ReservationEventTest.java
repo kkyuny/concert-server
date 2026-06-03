@@ -4,7 +4,7 @@ import kr.hhplus.be.server.TestKafkaConfiguration;
 import kr.hhplus.be.server.TestRedisConfiguration;
 import kr.hhplus.be.server.concert.domain.ConcertSeat;
 import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
-import kr.hhplus.be.server.reservation.appication.ReservationTokenService;
+import kr.hhplus.be.server.reservation.application.ReservationTokenService;
 import kr.hhplus.be.server.reservation.facade.ReservationFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.reservation.appication;
+package kr.hhplus.be.server.reservation.application;
 
 import kr.hhplus.be.server.reservation.api.dto.ReservationInfoResponse;
 import kr.hhplus.be.server.reservation.domain.NotFoundReservationException;

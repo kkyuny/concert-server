@@ -1,6 +1,11 @@
 # 카프카(kafka) 개념 학습 및 정리
 - 학습강의: 인프런(https://www.inflearn.com/course/practical-kafka-gett-1?cid=336438)
 
+- 운영 분리 메모
+    - Kafka 실습용 producer/controller/consumer 코드는 production runtime에 기본 등록되지 않도록 `kafka-practice` profile로 제한한다.
+    - 실습 실행 시에만 `local,kafka-practice` profile을 함께 활성화한다.
+    - 결제 완료 이벤트처럼 실제 도메인에서 사용하는 Kafka 코드는 실습용 코드와 별도 경계로 관리한다.
+
 - 주요 정리 내용
     - 브로커, 토픽, 파티션, 메시지구조 등 카프카 클러스터 구조에 대한 이해
     - 프로듀서, 컨슈머(컨슈머그룹), offset 등 카프카 핵심요소 학습

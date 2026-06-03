@@ -12,7 +12,7 @@ import kr.hhplus.be.server.concert.infrastructure.ConcertSeatRepository;
 import kr.hhplus.be.server.payment.api.dto.PaymentResponse;
 import kr.hhplus.be.server.payment.domain.PaymentStatus;
 import kr.hhplus.be.server.payment.facade.PaymentFacade;
-import kr.hhplus.be.server.reservation.appication.ReservationCommandService;
+import kr.hhplus.be.server.reservation.application.ReservationCommandService;
 import kr.hhplus.be.server.reservation.domain.ReservationStatus;
 import kr.hhplus.be.server.reservation.infrastructure.ReservationRepository;
 import org.junit.jupiter.api.AfterEach;
